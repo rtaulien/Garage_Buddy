@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Garage Buddy</title>
+    <style>
+      body {
+        font-family: system-ui, sans-serif;
+        max-width: 480px;
+        margin: 24px auto;
+        padding: 0 16px;
+      }
+      h1 {
+        font-size: 1.5rem;
+        margin: 0 0 8px;
+      }
+      p {
+        margin: 0 0 16px;
+        color: #444;
+      }
+      ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+      }
+      .row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px;
+        border: 2px solid;
+        border-radius: 8px;
+        margin-bottom: 10px;
+        background: #ddffdd;
+        border-color: #44aa44;
+      }
+      .in {
+        background: #ffdddd;
+        border-color: #ff4444;
+      }
+      .name {
+        font-weight: 600;
+      }
+      .meta {
+        font-size: 0.8rem;
+        color: #333;
+      }
+      button {
+        padding: 6px 12px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Garage Buddy</h1>
+    <p>Tap your name to mark whether you’re parked in the garage.</p>
+
+    <ul id="list"></ul>
+
+    <script>
+      const STORAGE_KEY = "garage-buddy";
+      const SEEDED_KEY = "garage-seeded-v1";
+
+      const defaultRoommates = [
+        {
+          id: "1",
+          name: "Ryan Cedeno",
+          in_garage: false,
+          updated_at: new Date().toISOString(),
+        },
+        {
+          id: "2",
+          name: "Tauls",
+          in_garage: false,
+          updated_at: new Date().toISOString(),
+        },
+        {
+          id: "3",
+          name: "Kiera",
+          in_garage: false,
+          updated_at: new Date().toISOString(),
+        },
+        {
+          id: "4",
+          name: "Andrew",
+          in_garage: false,
+          updated_at: new Date().toISOString(),
+        },
+        {
+          id: "5",
+          name: "Chris",
+          in_garage: false,
+          updated_at: new Date().toISOString(),
+        },
+        {
+          id: "6",
+          name: "Cole",
+          in_garage: false,
+          updated_at: new Date().toISOString(),
+        },
+      ];
+
+      // Seed on first run
+      if (!localStorage.getItem(SEEDED_KEY)) {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(defaultRoommates));
+        localStorage.setItem(SEEDED_KEY, "true");
+      }
+
+      function load() {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        return saved ? JSON.parse(saved) : defaultRoommates;
+      }
+
+      function save(state) {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      }
+
+      function render() {
+        const list = document.getElementById("list");
+        list.innerHTML = "";
+        const roommates = load();
+
+        roommates.forEach((r) => {
+          const li = document.createElement("li");
+          li.className = "row" + (r.in_garage ? " in" : "");
+
+          const left = document.createElement("div");
+          const name = document.createElement("div");
+          name.className = "name";
+          name.textContent = r.name;
+          const meta = document.createElement("div");
+          meta.className = "meta";
+          meta.textContent =
+            (r.in_garage ? "In garage" : "Not in garage") +
+            " • " +
+            new Date(r.updated_at || Date.now()).toLocaleString();
+          left.appendChild(name);
+          left.appendChild(meta);
+
+          const btn = document.createElement("button");
+          btn.textContent = r.in_garage ? "Leave" : "Parked";
+          btn.addEventListener("click", () => {
+            const now = new Date().toISOString();
+            const updated = load().map((x) =>
+              x.id === r.id
+                ? { ...x, in_garage: !x.in_garage, updated_at: now }
+                : x
+            );
+            save(updated);
+            render();
+          });
+
+          li.appendChild(left);
+          li.appendChild(btn);
+          list.appendChild(li);
+        });
+      }
+
+      render();
+    </script>
+  </body>
+</html>
